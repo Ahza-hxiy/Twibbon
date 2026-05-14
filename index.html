@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Twibbon Generator</title>
+  <title>Twibbon TK as-sidiqqiyah</title>
 
-  <!-- Pastikan file twibbon.css dengan tema Fresh Orange Glassmorphism berada di folder yang sama -->
+  <!-- Hubungkan ke file twibbon.css -->
   <link rel="stylesheet" href="twibbon.css">
 </head>
 
@@ -14,104 +14,195 @@
 
   <div class="container">
     <h1 class="title">
-      Twibbon Generator
+      Twibbon! <br>
+      <span style="font-size: 2.1rem; opacity: 1.0;">TK as-sidiqqiyah</span>
     </h1>
 
     <p class="subtitle">
-      Upload foto lalu download atau simpan hasil twibbon kamu ke Drive ✨
+      Upload foto kamu, lalu download, simpan hasil twibbon ke Drive, dan bisa juga upload ke sosial media kamu✨
     </p>
 
-    <!-- Upload -->
+    <!-- Bagian Upload -->
     <div class="form-group">
-      <label class="label">
-        Upload Foto
+      <label class="label">Pilih Foto kamu!</label>
+      
+      <!-- Ini desain tombol baru yang akan diklik user -->
+      <label for="upload" class="custom-file-upload">
+        <span id="file-name">📁 Pilih File Gambar...</span>
       </label>
-      <input
-        type="file"
-        accept="image/*"
-        id="upload"
-        class="file-input"
-      >
+      
+      <!-- Ini input aslinya, kita sembunyikan (display: none) -->
+      <input type="file" accept="image/*" id="upload" style="display: none;">
     </div>
 
-    <!-- Preview -->
+    <!-- Kotak Preview -->
     <div class="preview-box">
-      <img
-        id="preview"
-        src="https://placehold.co/1080x1080/png"
-        alt="preview"
-        class="preview-image"
-      >
-      <!-- Pastikan file frame.png kamu berada di folder yang sama -->
-      <img
-        src="frame.png"
-        alt="frame"
-        class="frame-image"
-      >
+      <img id="preview" src="https://placehold.co/1080x1080/png" alt="preview" class="preview-image">
+      <!-- Pastikan file frame.png ada di folder yang sama -->
+      <img src="frame.png" alt="frame" class="frame-image">
     </div>
 
-    <!-- Buttons -->
-    <button
-      id="downloadBtn"
-      class="download-btn"
-    >
+    <!-- FITUR BARU: Slider Zoom & Info Geser -->
+    <div class="zoom-control" style="margin-bottom: 25px;">
+      <label style="display: block; font-size: 0.85rem; color: #166534; font-weight: 600; margin-bottom: 8px; text-align: left;">
+        Atur Ukuran Foto:
+      </label>
+      <input type="range" id="zoomSlider" min="0.5" max="3" step="0.05" value="1" style="width: 100%; cursor: pointer;">
+      <p style="font-size: 0.75rem; text-align: center; color: #14532d; margin-top: 8px; font-style: italic;">
+        *Sentuh lalu geser foto di atas untuk memindahkan posisi
+      </p>
+    </div>
+
+    <!-- Tombol Aksi Utama -->
+    <button id="downloadBtn" class="download-btn">
       Download Twibbon
     </button>
 
-    <button 
-      id="sendBtn" 
-      class="download-btn" 
-      style="margin-top: 15px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.30);"
-    >
+    <button id="sendBtn" class="download-btn" style="margin-top: 15px;">
       Kirim ke Google Drive
     </button>
 
+    <!-- Shortcut Sosial Media -->
+    <div class="social-shortcut">
+      <p class="share-text">Bagikan ke Sosial Media:</p>
+      <div class="social-buttons">
+        <a href="https://www.instagram.com/" target="_blank" class="btn-ig">
+          Instagram
+        </a>
+        <a href="https://www.facebook.com/" target="_blank" class="btn-fb">
+          Facebook
+        </a>
+      </div>
+    </div>
+
+    <!-- Bagian Footer / Kontak Pembuat -->
+    <footer class="footer-credit">
+      <p><strong>Info kontak pengembang: </strong></p>
+      <div class="footer-links">
+        <a href="https://wa.me/085692107849" target="_blank">WhatsApp</a>
+        <span class="separator">|</span>
+        <a href="https://www.instagram.com/ahzaaaa.hxiy?igsh=MW5zNGVscTJramVpcw==" target="_blank">Instagram</a>
+      </div>
+    </footer>
+
   </div>
 
-  <!-- JAVASCRIPT -->
+  <!-- JAVASCRIPT LOGIC (Update Zoom & Pan) -->
   <script>
     const upload = document.getElementById("upload");
     const preview = document.getElementById("preview");
     const downloadBtn = document.getElementById("downloadBtn");
     const sendBtn = document.getElementById("sendBtn");
+    const zoomSlider = document.getElementById("zoomSlider");
+    const previewBox = document.querySelector(".preview-box");
 
-    // ==========================================
-    // URL WEB APP GOOGLE APPS SCRIPT
-    // ==========================================
+    // URL Web App Google Apps Script kamu
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxhEDrjkxSPGD6Pgpsl4A3dd5Q9h_ydVwsqZqhysf_td76ZCDKgmbRfZ4Cuioyfvgj6hQ/exec"; 
-
-    // Ukuran standar resolusi Twibbon (persegi)
     const canvasSize = 1080; 
 
-    // 1. Fitur Upload Gambar ke Preview
+    // --- VARIABEL UNTUK POSISI & ZOOM ---
+    let imgX = 0, imgY = 0;
+    let isDragging = false;
+    let startX, startY;
+    let zoomLevel = 1;
+
+    // 1. Reset Posisi Saat Upload Foto Baru & Ubah Teks Nama File
     upload.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
+      // Mengubah teks pada tombol menjadi nama file yang dipilih
+      const fileNameStr = file.name;
+      document.getElementById("file-name").innerText = "📁 " + fileNameStr;
+
+      // Membaca file gambar
       const reader = new FileReader();
       reader.onload = () => {
         preview.src = reader.result;
+        // Kembalikan foto ke tengah dan zoom ke 1x
+        imgX = 0; imgY = 0; zoomLevel = 1;
+        zoomSlider.value = 1;
+        updatePreviewTransform();
       };
       reader.readAsDataURL(file);
     });
 
-    // 2. Fungsi Bantuan untuk Menggambar Canvas dengan Presisi (Object-Fit: Cover)
-    const drawToCanvas = (ctx, userImg, frameImg) => {
-      // Hitung skala untuk foto user agar memenuhi canvas tanpa gepeng
-      const scale = Math.max(canvasSize / userImg.width, canvasSize / userImg.height);
-      const newWidth = userImg.width * scale;
-      const newHeight = userImg.height * scale;
-      const offsetX = (canvasSize - newWidth) / 2;
-      const offsetY = (canvasSize - newHeight) / 2;
+    // 2. Logika Visual Transform (CSS)
+    const updatePreviewTransform = () => {
+      preview.style.transform = `translate(${imgX}px, ${imgY}px) scale(${zoomLevel})`;
+    };
 
-      // Gambar foto user di layer bawah
-      ctx.drawImage(userImg, offsetX, offsetY, newWidth, newHeight);
-      // Gambar frame twibbon di layer atas
+    zoomSlider.addEventListener("input", (e) => {
+      zoomLevel = parseFloat(e.target.value);
+      updatePreviewTransform();
+    });
+
+    // --- LOGIKA GESER FOTO (HP & LAPTOP) ---
+
+    // Touch (HP/Tablet)
+    previewBox.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      startX = e.touches[0].clientX - imgX;
+      startY = e.touches[0].clientY - imgY;
+    });
+    window.addEventListener('touchend', () => isDragging = false);
+    previewBox.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault(); // Mencegah layar ikut scroll saat geser foto
+      imgX = e.touches[0].clientX - startX;
+      imgY = e.touches[0].clientY - startY;
+      updatePreviewTransform();
+    }, { passive: false });
+
+    // Mouse (Laptop/PC)
+    previewBox.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX - imgX;
+      startY = e.clientY - imgY;
+    });
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      imgX = e.clientX - startX;
+      imgY = e.clientY - startY;
+      updatePreviewTransform();
+    });
+
+    // 3. Fungsi Gambar ke Canvas (Matematika Baru)
+    const drawToCanvas = (ctx, userImg, frameImg) => {
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+      const baseScale = Math.max(canvasSize / userImg.width, canvasSize / userImg.height);
+      const baseWidth = userImg.width * baseScale;
+      const baseHeight = userImg.height * baseScale;
+
+      // Rasio perbedaan ukuran kotak di layar vs ukuran asli Canvas (1080px)
+      const domRatio = canvasSize / previewBox.offsetWidth;
+
+      ctx.save();
+      // Pindah poros ke tengah kanvas
+      ctx.translate(canvasSize / 2, canvasSize / 2);
+      
+      // Terapkan pergeseran (pan) hasil tarikan jari
+      ctx.translate(imgX * domRatio, imgY * domRatio);
+      
+      // Terapkan zoom dari slider
+      ctx.scale(zoomLevel, zoomLevel);
+
+      // Gambar foto
+      ctx.drawImage(userImg, -baseWidth / 2, -baseHeight / 2, baseWidth, baseHeight);
+      ctx.restore();
+
+      // Gambar frame transparan di atasnya
       ctx.drawImage(frameImg, 0, 0, canvasSize, canvasSize);
     };
 
-    // 3. Fitur Download Twibbon
+    // 4. Logika Download
     downloadBtn.addEventListener("click", () => {
+      if (preview.src.includes("placehold.co") || !upload.files[0]) {
+        alert("Silakan pilih foto terlebih dahulu!");
+        return;
+      }
       const canvas = document.createElement("canvas");
       canvas.width = canvasSize;
       canvas.height = canvasSize;
@@ -128,20 +219,22 @@
       userImg.onload = () => {
         frameImg.onload = () => {
           drawToCanvas(ctx, userImg, frameImg);
-
-          // Proses trigger unduhan gambar
           const link = document.createElement("a");
-          link.download = "twibbon-hasil.png";
+          link.download = "Twibbon_TK_assidiqqiyah.png";
           link.href = canvas.toDataURL("image/png");
           link.click();
         };
       };
     });
 
-    // 4. Fitur Kirim ke Google Drive
+    // 5. Logika Kirim ke Google Drive
     sendBtn.addEventListener("click", async () => {
       if (!GAS_URL || GAS_URL === "") {
         alert("URL Google Apps Script belum terisi.");
+        return;
+      }
+      if (preview.src.includes("placehold.co") || !upload.files[0]) {
+        alert("Silakan pilih foto terlebih dahulu!");
         return;
       }
 
@@ -154,50 +247,50 @@
       const frameImg = new Image();
       userImg.crossOrigin = "anonymous";
       frameImg.crossOrigin = "anonymous";
-      
-      userImg.src = preview.src;
-      frameImg.src = "frame.png";
 
-      // Tampilkan status loading agar pengguna tahu proses sedang berjalan
       sendBtn.innerText = "Mengirim... Mohon tunggu";
       sendBtn.disabled = true;
+
+      frameImg.onerror = () => {
+        alert("Gagal memuat bingkai (frame.png). Cek kembali file Anda.");
+        sendBtn.innerText = "Kirim ke Google Drive";
+        sendBtn.disabled = false;
+      };
 
       userImg.onload = () => {
         frameImg.onload = async () => {
           drawToCanvas(ctx, userImg, frameImg);
-
-          // Konversi hasil Canvas ke format Base64
           const base64Image = canvas.toDataURL("image/png");
 
-          // Proses pengiriman data
           try {
             const response = await fetch(GAS_URL, {
               method: "POST",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
               body: JSON.stringify({
-                fileName: "Twibbon_Hasil.png",
+                fileName: "Twibbon_TK_" + new Date().getTime() + ".png",
                 base64: base64Image
               })
             });
 
             const result = await response.json();
-            
             if (result.status === "success") {
-              alert("Berhasil! File telah tersimpan di Google Drive.");
+              alert("Berhasil! Twibbon tersimpan di Google Drive.");
             } else {
-              alert("Gagal menyimpan file: " + result.message);
+              alert("Gagal: " + result.message);
             }
           } catch (error) {
-            // Penerapan Error Handling
-            alert("Terjadi kesalahan jaringan atau CORS. Silakan coba lagi.");
+            alert("Terjadi kesalahan jaringan.");
             console.error(error);
           } finally {
-            // Kembalikan tombol ke kondisi semula
             sendBtn.innerText = "Kirim ke Google Drive";
             sendBtn.disabled = false;
           }
         };
+        frameImg.src = "frame.png"; 
       };
+      userImg.src = preview.src; 
     });
   </script>
 </body>
+
 </html>
