@@ -312,16 +312,24 @@ input[type=range] {
 @media(max-width:768px) {
   body {
     padding: 20px;
+    padding-top: 40px; 
+    /* Ini Kunci Utamanya: mengubah flex menjadi block agar scroll HP lancar */
+    display: block; 
+    overflow-x: hidden;
     overflow-y: auto;
   }
+  
   .container {
+    margin: 0 auto; /* Memastikan kotak tetap di tengah kiri-kanan */
     padding: 25px;
     border-radius: 28px;
-    margin-top: 50px; /* Memberi ruang agar teks pojok kanan tidak tertutup */
+    margin-top: 40px; /* Memberi ruang agar teks pojok kanan tidak tertutup */
   }
+  
   .title {
     font-size: 1.8rem;
   }
+  
   .top-right-text {
     top: 15px;
     right: 15px;
