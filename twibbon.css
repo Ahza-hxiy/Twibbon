@@ -1,0 +1,307 @@
+/* =========================================
+ FILE : twibbon.css
+ THEME : Fresh Orange Glassmorphism
+========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:'Poppins',sans-serif;
+
+  min-height:100vh;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:30px;
+
+  overflow:hidden;
+
+  background:
+    radial-gradient(circle at top left,
+    rgba(255,190,92,0.55),
+    transparent 30%),
+
+    radial-gradient(circle at bottom right,
+    rgba(255,145,77,0.35),
+    transparent 35%),
+
+    linear-gradient(
+      135deg,
+      #fff7ed 0%,
+      #ffedd5 35%,
+      #fed7aa 100%
+    );
+}
+
+/* =========================
+   FLOATING BLUR EFFECT
+========================= */
+
+body::before,
+body::after{
+  content:"";
+
+  position:fixed;
+
+  width:350px;
+  height:350px;
+
+  border-radius:50%;
+
+  filter:blur(90px);
+
+  z-index:-1;
+}
+
+body::before{
+  top:-100px;
+  left:-100px;
+
+  background:rgba(255,166,77,0.45);
+}
+
+body::after{
+  bottom:-120px;
+  right:-120px;
+
+  background:rgba(255,208,140,0.45);
+}
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.container{
+  width:100%;
+  max-width:720px;
+
+  padding:35px;
+
+  border-radius:36px;
+
+  background:rgba(255,255,255,0.18);
+
+  backdrop-filter:blur(22px);
+  -webkit-backdrop-filter:blur(22px);
+
+  border:1px solid rgba(255,255,255,0.28);
+
+  box-shadow:
+    0 8px 32px rgba(255,145,77,0.15),
+    inset 0 1px 1px rgba(255,255,255,0.25);
+}
+
+/* =========================
+   TITLE
+========================= */
+
+.title{
+  text-align:center;
+
+  font-size:2.6rem;
+  font-weight:700;
+
+  color:#ea580c;
+
+  margin-bottom:10px;
+
+  letter-spacing:-1px;
+}
+
+.subtitle{
+  text-align:center;
+
+  color:#7c2d12;
+
+  font-size:1rem;
+
+  margin-bottom:35px;
+
+  opacity:0.85;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.form-group{
+  margin-bottom:28px;
+}
+
+.label{
+  display:block;
+
+  margin-bottom:12px;
+
+  font-size:0.95rem;
+  font-weight:600;
+
+  color:#7c2d12;
+}
+
+/* =========================
+   INPUT GLASS
+========================= */
+
+.file-input{
+  width:100%;
+
+  padding:16px;
+
+  border-radius:22px;
+
+  border:1px solid rgba(255,255,255,0.35);
+
+  background:rgba(255,255,255,0.20);
+
+  backdrop-filter:blur(12px);
+
+  color:#7c2d12;
+
+  cursor:pointer;
+
+  transition:0.3s ease;
+}
+
+.file-input:hover{
+  background:rgba(255,255,255,0.28);
+
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 10px 25px rgba(255,145,77,0.12);
+}
+
+/* =========================
+   PREVIEW FRAME
+========================= */
+
+.preview-box{
+  position:relative;
+
+  width:100%;
+  aspect-ratio:1/1;
+
+  overflow:hidden;
+
+  border-radius:30px;
+
+  background:rgba(255,255,255,0.12);
+
+  border:1px solid rgba(255,255,255,0.25);
+
+  backdrop-filter:blur(18px);
+
+  margin-bottom:30px;
+
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.25),
+    0 8px 24px rgba(255,145,77,0.10);
+}
+
+/* =========================
+   IMAGES
+========================= */
+
+.preview-image,
+.frame-image{
+  position:absolute;
+
+  inset:0;
+
+  width:100%;
+  height:100%;
+
+  object-fit:cover;
+}
+
+.frame-image{
+  pointer-events:none;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.download-btn{
+  width:100%;
+
+  padding:18px;
+
+  border:none;
+
+  border-radius:24px;
+
+  font-size:1rem;
+  font-weight:600;
+
+  color:white;
+
+  cursor:pointer;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fb923c,
+      #f97316
+    );
+
+  box-shadow:
+    0 10px 25px rgba(249,115,22,0.30);
+
+  transition:0.3s ease;
+}
+
+.download-btn:hover{
+  transform:translateY(-3px);
+
+  box-shadow:
+    0 14px 30px rgba(249,115,22,0.35);
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #ea580c
+    );
+}
+
+.download-btn:active{
+  transform:scale(0.98);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:768px){
+
+  body{
+    padding:20px;
+  }
+
+  .container{
+    padding:25px;
+    border-radius:28px;
+  }
+
+  .title{
+    font-size:2rem;
+  }
+
+  .subtitle{
+    font-size:0.92rem;
+  }
+
+  .download-btn{
+    padding:16px;
+  }
+}

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Twibbon Generator</title>
+
+  <!-- Pastikan file twibbon.css dengan tema Fresh Orange Glassmorphism berada di folder yang sama -->
+  <link rel="stylesheet" href="twibbon.css">
+</head>
+
+<body>
+
+  <div class="container">
+    <h1 class="title">
+      Twibbon Generator
+    </h1>
+
+    <p class="subtitle">
+      Upload foto lalu download atau simpan hasil twibbon kamu ke Drive ✨
+    </p>
+
+    <!-- Upload -->
+    <div class="form-group">
+      <label class="label">
+        Upload Foto
+      </label>
+      <input
+        type="file"
+        accept="image/*"
+        id="upload"
+        class="file-input"
+      >
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-box">
+      <img
+        id="preview"
+        src="https://placehold.co/1080x1080/png"
+        alt="preview"
+        class="preview-image"
+      >
+      <!-- Pastikan file frame.png kamu berada di folder yang sama -->
+      <img
+        src="frame.png"
+        alt="frame"
+        class="frame-image"
+      >
+    </div>
+
+    <!-- Buttons -->
+    <button
+      id="downloadBtn"
+      class="download-btn"
+    >
+      Download Twibbon
+    </button>
+
+    <button 
+      id="sendBtn" 
+      class="download-btn" 
+      style="margin-top: 15px; background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 10px 25px rgba(16, 185, 129, 0.30);"
+    >
+      Kirim ke Google Drive
+    </button>
+
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    const upload = document.getElementById("upload");
+    const preview = document.getElementById("preview");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const sendBtn = document.getElementById("sendBtn");
+
+    // ==========================================
+    // URL WEB APP GOOGLE APPS SCRIPT
+    // ==========================================
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxhEDrjkxSPGD6Pgpsl4A3dd5Q9h_ydVwsqZqhysf_td76ZCDKgmbRfZ4Cuioyfvgj6hQ/exec"; 
+
+    // Ukuran standar resolusi Twibbon (persegi)
+    const canvasSize = 1080; 
+
+    // 1. Fitur Upload Gambar ke Preview
+    upload.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // 2. Fungsi Bantuan untuk Menggambar Canvas dengan Presisi (Object-Fit: Cover)
+    const drawToCanvas = (ctx, userImg, frameImg) => {
+      // Hitung skala untuk foto user agar memenuhi canvas tanpa gepeng
+      const scale = Math.max(canvasSize / userImg.width, canvasSize / userImg.height);
+      const newWidth = userImg.width * scale;
+      const newHeight = userImg.height * scale;
+      const offsetX = (canvasSize - newWidth) / 2;
+      const offsetY = (canvasSize - newHeight) / 2;
+
+      // Gambar foto user di layer bawah
+      ctx.drawImage(userImg, offsetX, offsetY, newWidth, newHeight);
+      // Gambar frame twibbon di layer atas
+      ctx.drawImage(frameImg, 0, 0, canvasSize, canvasSize);
+    };
+
+    // 3. Fitur Download Twibbon
+    downloadBtn.addEventListener("click", () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
+      const ctx = canvas.getContext("2d");
+
+      const userImg = new Image();
+      const frameImg = new Image();
+      userImg.crossOrigin = "anonymous";
+      frameImg.crossOrigin = "anonymous";
+
+      userImg.src = preview.src;
+      frameImg.src = "frame.png";
+
+      userImg.onload = () => {
+        frameImg.onload = () => {
+          drawToCanvas(ctx, userImg, frameImg);
+
+          // Proses trigger unduhan gambar
+          const link = document.createElement("a");
+          link.download = "twibbon-hasil.png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        };
+      };
+    });
+
+    // 4. Fitur Kirim ke Google Drive
+    sendBtn.addEventListener("click", async () => {
+      if (!GAS_URL || GAS_URL === "") {
+        alert("URL Google Apps Script belum terisi.");
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = canvasSize;
+      canvas.height = canvasSize;
+      const ctx = canvas.getContext("2d");
+
+      const userImg = new Image();
+      const frameImg = new Image();
+      userImg.crossOrigin = "anonymous";
+      frameImg.crossOrigin = "anonymous";
+      
+      userImg.src = preview.src;
+      frameImg.src = "frame.png";
+
+      // Tampilkan status loading agar pengguna tahu proses sedang berjalan
+      sendBtn.innerText = "Mengirim... Mohon tunggu";
+      sendBtn.disabled = true;
+
+      userImg.onload = () => {
+        frameImg.onload = async () => {
+          drawToCanvas(ctx, userImg, frameImg);
+
+          // Konversi hasil Canvas ke format Base64
+          const base64Image = canvas.toDataURL("image/png");
+
+          // Proses pengiriman data
+          try {
+            const response = await fetch(GAS_URL, {
+              method: "POST",
+              body: JSON.stringify({
+                fileName: "Twibbon_Hasil.png",
+                base64: base64Image
+              })
+            });
+
+            const result = await response.json();
+            
+            if (result.status === "success") {
+              alert("Berhasil! File telah tersimpan di Google Drive.");
+            } else {
+              alert("Gagal menyimpan file: " + result.message);
+            }
+          } catch (error) {
+            // Penerapan Error Handling
+            alert("Terjadi kesalahan jaringan atau CORS. Silakan coba lagi.");
+            console.error(error);
+          } finally {
+            // Kembalikan tombol ke kondisi semula
+            sendBtn.innerText = "Kirim ke Google Drive";
+            sendBtn.disabled = false;
+          }
+        };
+      };
+    });
+  </script>
+</body>
+</html>
